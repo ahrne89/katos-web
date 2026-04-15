@@ -2,8 +2,14 @@
 
 import { useState, useRef, useEffect } from 'react'
 
+type Message = {
+  role: string
+  content: string
+  showCTA?: boolean
+}
+
 export default function Home() {
-  const [messages, setMessages] = useState<{ role: string; content: string }[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
@@ -15,7 +21,7 @@ export default function Home() {
 
   const send = async () => {
     if (!input.trim() || loading) return
-    const userMessage = { role: 'user', content: input }
+    const userMessage: Message = { role: 'user', content: input }
     const updatedMessages = [...messages, userMessage]
     setMessages(updatedMessages)
     setInput('')
@@ -26,13 +32,16 @@ export default function Home() {
       const res = await fetch('/api/katos-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updatedMessages })
+        body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) })
       })
       const data = await res.json()
       if (data.error) {
         setMessages([...updatedMessages, { role: 'assistant', content: data.error }])
       } else {
-        setMessages([...updatedMessages, { role: 'assistant', content: data.reply }])
+        const raw: string = data.reply
+        const showCTA = raw.includes('[BOOK_CTA]')
+        const content = raw.replace('[BOOK_CTA]', '').trim()
+        setMessages([...updatedMessages, { role: 'assistant', content, showCTA }])
       }
     } catch {
       setMessages([...updatedMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
@@ -87,11 +96,10 @@ export default function Home() {
           I&apos;m Kato — how can I help you today?
         </p>
 
-        {/* Chat messages */}
         {chatOpen && (
           <div style={{
             width: '100%',
-            maxHeight: '320px',
+            maxHeight: '360px',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -99,10 +107,7 @@ export default function Home() {
             padding: '4px 0',
           }}>
             {messages.map((m, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start',
-              }}>
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '8px' }}>
                 <div style={{
                   maxWidth: '85%',
                   padding: '10px 14px',
@@ -112,10 +117,29 @@ export default function Home() {
                   background: m.role === 'user' ? '#1a1a1a' : 'rgba(255,255,255,0.8)',
                   color: m.role === 'user' ? '#fff' : '#1a1a1a',
                   border: m.role === 'user' ? 'none' : '1px solid rgba(0,0,0,0.08)',
-                  backdropFilter: 'blur(8px)',
                 }}>
                   {m.content}
                 </div>
+                {m.showCTA && (
+                  <a
+                    href="https://cal.com/axel-kindvall-3pe7ih"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: 'inline-block',
+                      padding: '10px 20px',
+                      background: '#1a1a1a',
+                      color: '#fff',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      textDecoration: 'none',
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    Book a call →
+                  </a>
+                )}
               </div>
             ))}
             {loading && (
