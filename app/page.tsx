@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 
 type Message = {
   role: string
@@ -17,9 +17,13 @@ export default function Home() {
   const exploreRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (chatContainerRef.current) { chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight }
-  }, [messages])
+  const scrollChat = () => {
+    setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+      }
+    }, 50)
+  }
 
   const send = async () => {
     if (!input.trim() || loading) return
@@ -29,6 +33,7 @@ export default function Home() {
     setInput('')
     setLoading(true)
     setChatOpen(true)
+    scrollChat()
     try {
       const res = await fetch('/api/katos-chat', {
         method: 'POST',
@@ -38,6 +43,7 @@ export default function Home() {
       const data = await res.json()
       if (data.error) {
         setMessages([...updatedMessages, { role: 'assistant', content: data.error }])
+      scrollChat()
       } else {
         const raw: string = data.reply
         const showCTA = raw.includes('[BOOK_CTA]')
@@ -46,6 +52,7 @@ export default function Home() {
       }
     } catch {
       setMessages([...updatedMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
+      scrollChat()
     }
     setLoading(false)
   }
@@ -156,7 +163,7 @@ export default function Home() {
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
               placeholder="Say something..."
-              style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: '14px', background: 'transparent', fontFamily: 'inherit', color: '#f0f0f0', fontWeight: 300 }}
+              style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: '16px', background: 'transparent', fontFamily: 'inherit', color: '#f0f0f0', fontWeight: 300 }}
             />
             <button onClick={send} disabled={loading} style={{ background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: '#7b9cff', fontSize: '16px', opacity: loading ? 0.4 : 1, transition: 'opacity 0.2s' }}>→</button>
           </div>
