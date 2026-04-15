@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type Message = {
   role: string
@@ -16,6 +16,23 @@ export default function Home() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const exploreRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (chatOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [chatOpen])
 
   const scrollChat = () => {
     setTimeout(() => {
@@ -43,12 +60,13 @@ export default function Home() {
       const data = await res.json()
       if (data.error) {
         setMessages([...updatedMessages, { role: 'assistant', content: data.error }])
-      scrollChat()
+        scrollChat()
       } else {
         const raw: string = data.reply
         const showCTA = raw.includes('[BOOK_CTA]')
         const content = raw.replace('[BOOK_CTA]', '').trim()
         setMessages([...updatedMessages, { role: 'assistant', content, showCTA }])
+        scrollChat()
       }
     } catch {
       setMessages([...updatedMessages, { role: 'assistant', content: 'Something went wrong. Please try again.' }])
@@ -66,6 +84,112 @@ export default function Home() {
 
   return (
     <>
+      <style>{`
+        .chat-fullscreen {
+          position: fixed;
+          inset: 0;
+          background: #080d1f;
+          display: flex;
+          flex-direction: column;
+          z-index: 100;
+        }
+        .chat-fullscreen-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-shrink: 0;
+        }
+        .chat-fullscreen-messages {
+          flex: 1;
+          overflow-y: auto;
+          padding: 24px 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+        .chat-fullscreen-input {
+          padding: 16px 20px;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-shrink: 0;
+          background: #080d1f;
+        }
+        @media (min-width: 769px) {
+          .chat-fullscreen { display: none !important; }
+          .desktop-chat { display: flex !important; }
+        }
+        @media (max-width: 768px) {
+          .desktop-chat { display: none !important; }
+        }
+      `}</style>
+
+      {/* Mobile fullscreen chat overlay */}
+      {chatOpen && (
+        <div className="chat-fullscreen">
+          <div className="chat-fullscreen-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, #a0b4ff, #5b6fff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 500, color: '#fff' }}>K</div>
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: '#f0f0f0', margin: 0 }}>Kato</p>
+                <p style={{ fontSize: '11px', color: '#9ba3c4', margin: 0 }}>Online</p>
+              </div>
+            </div>
+            <button onClick={() => setChatOpen(false)} style={{ background: 'none', border: 'none', color: '#9ba3c4', fontSize: '13px', cursor: 'pointer', padding: '4px 8px' }}>
+              Close
+            </button>
+          </div>
+
+          <div ref={chatContainerRef} className="chat-fullscreen-messages">
+            {messages.map((m, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '8px' }}>
+                <div style={{
+                  maxWidth: '82%', padding: '10px 14px',
+                  borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  fontSize: '15px', lineHeight: '1.6', fontWeight: 300,
+                  background: m.role === 'user' ? '#1e2a52' : 'rgba(255,255,255,0.07)',
+                  color: m.role === 'user' ? '#e0e8ff' : '#d8ddf0',
+                  border: m.role === 'user' ? '1px solid rgba(123,156,255,0.2)' : '1px solid rgba(255,255,255,0.07)',
+                }}>
+                  {m.content}
+                </div>
+                {m.showCTA && (
+                  <a href="https://cal.com/axel-kindvall-3pe7ih" target="_blank" rel="noreferrer" style={{ display: 'inline-block', padding: '10px 20px', background: '#7b9cff', color: '#080d1f', borderRadius: '8px', fontSize: '13px', fontWeight: 500, textDecoration: 'none' }}>
+                    Book a call →
+                  </a>
+                )}
+              </div>
+            ))}
+            {loading && (
+              <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ padding: '10px 14px', borderRadius: '16px 16px 16px 4px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: '4px', alignItems: 'center' }}>
+                  {[0, 1, 2].map(i => (
+                    <div key={i} style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#7b9cff', animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
+                  ))}
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          <div className="chat-fullscreen-input">
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && send()}
+              placeholder="Say something..."
+              autoFocus
+              style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: '16px', background: 'transparent', fontFamily: 'inherit', color: '#f0f0f0', fontWeight: 300 }}
+            />
+            <button onClick={send} disabled={loading} style={{ background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: '#7b9cff', fontSize: '18px', opacity: loading ? 0.4 : 1 }}>→</button>
+          </div>
+        </div>
+      )}
+
+      {/* Main page */}
       <main style={{
         minHeight: '100vh',
         background: 'radial-gradient(ellipse at 50% 40%, #111b3a 0%, #080d1f 65%)',
@@ -76,7 +200,6 @@ export default function Home() {
         position: 'relative',
         overflow: 'hidden',
       }}>
-        {/* Stars */}
         <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
           {Array.from({ length: 60 }).map((_, i) => (
             <div key={i} style={{
@@ -96,10 +219,7 @@ export default function Home() {
           <span style={{ fontSize: '14px', fontWeight: 500, letterSpacing: '0.12em', color: '#f0f0f0' }}>KATOS</span>
           <div style={{ display: 'flex', gap: '32px' }}>
             {['Services', 'Projects', 'About'].map(l => (
-              <a key={l} href={`/${l.toLowerCase()}`} style={{ fontSize: '13px', color: '#9ba3c4', textDecoration: 'none', fontWeight: 400, transition: 'color 0.2s' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#f0f0f0')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#9ba3c4')}
-              >{l}</a>
+              <a key={l} href={`/${l.toLowerCase()}`} style={{ fontSize: '13px', color: '#9ba3c4', textDecoration: 'none' }}>{l}</a>
             ))}
           </div>
         </nav>
@@ -123,16 +243,17 @@ export default function Home() {
             I&apos;m Kato — how can I help you today?
           </p>
 
+          {/* Desktop chat inline */}
           {chatOpen && (
-            <div ref={chatContainerRef} style={{ width: '100%', maxHeight: '360px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', padding: '4px 0' }}>
+            <div className="desktop-chat" ref={chatContainerRef} style={{ width: '100%', maxHeight: '360px', overflowY: 'auto', flexDirection: 'column', gap: '12px', padding: '4px 0' }}>
               {messages.map((m, i) => (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '8px' }}>
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '8px', marginBottom: '12px' }}>
                   <div style={{
                     maxWidth: '85%', padding: '10px 14px',
                     borderRadius: m.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                     fontSize: '14px', lineHeight: '1.6', fontWeight: 300,
                     background: m.role === 'user' ? '#1e2a52' : 'rgba(255,255,255,0.06)',
-                    color: m.role === 'user' ? '#e0e8ff' : '#c8cde0',
+                    color: m.role === 'user' ? '#e0e8ff' : '#d8ddf0',
                     border: m.role === 'user' ? '1px solid rgba(123,156,255,0.2)' : '1px solid rgba(255,255,255,0.07)',
                   }}>
                     {m.content}
@@ -145,7 +266,7 @@ export default function Home() {
                 </div>
               ))}
               {loading && (
-                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '12px' }}>
                   <div style={{ padding: '10px 14px', borderRadius: '16px 16px 16px 4px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: '4px', alignItems: 'center' }}>
                     {[0, 1, 2].map(i => (
                       <div key={i} style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#7b9cff', animation: `bounce 1.2s ease-in-out ${i * 0.2}s infinite` }} />
@@ -153,7 +274,6 @@ export default function Home() {
                   </div>
                 </div>
               )}
-              <div ref={bottomRef} />
             </div>
           )}
 
@@ -168,10 +288,9 @@ export default function Home() {
             <button onClick={send} disabled={loading} style={{ background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: '#7b9cff', fontSize: '16px', opacity: loading ? 0.4 : 1, transition: 'opacity 0.2s' }}>→</button>
           </div>
 
-          <span onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: '11px', color: '#7b85a8', letterSpacing: '0.08em', cursor: 'pointer', transition: 'color 0.2s' }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#9ba3c4')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#7b85a8')}
-          >or explore ↓</span>
+          <span onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: '11px', color: '#7b85a8', letterSpacing: '0.08em', cursor: 'pointer' }}>
+            or explore ↓
+          </span>
         </div>
       </main>
 
