@@ -35,7 +35,9 @@ export async function POST(req: NextRequest) {
       system: katosPrompt,
       messages,
     })
-    return NextResponse.json({ reply: response.content[0].text })
+    const block = response.content[0]
+    const reply = block.type === 'text' ? block.text : ''
+    return NextResponse.json({ reply })
   } catch (error) {
     console.error(error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
