@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Too many messages. Please wait a moment.' }, { status: 429 })
   }
 
-  const { messages } = await req.json()
+  const { messages, sessionId } = await req.json()
 
   if (!messages || !Array.isArray(messages)) {
     return NextResponse.json({ error: 'Invalid messages' }, { status: 400 })
@@ -45,14 +45,28 @@ export async function POST(req: NextRequest) {
     const block = response.content[0]
     const reply = block.type === 'text' ? block.text : ''
 
-    const { error: dbError } = await supabase.from('conversations').insert({
-      source: 'katos',
-      messages: [...messages, { role: 'assistant', content: reply }],
-      ip,
-    })
+    const fullMessages = [...messages, { role: 'assistant', content: reply }]
 
-    if (dbError) {
-      console.error('Supabase error:', JSON.stringify(dbError))
+    if (sessionId) {
+      const { data: existing } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('session_id', sessionId)
+        .single()
+
+      if (existing) {
+        await supabase
+          .from('conversations')
+          .update({ messages: fullMessages })
+          .eq('session_id', sessionId)
+      } else {
+        await supabase.from('conversations').insert({
+          source: 'katos',
+          messages: fullMessages,
+          ip,
+          session_id: sessionId,
+        })
+      }
     }
 
     return NextResponse.json({ reply })

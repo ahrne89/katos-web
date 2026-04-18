@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type Message = {
   role: string
@@ -8,13 +8,35 @@ type Message = {
   showCTA?: boolean
 }
 
+function generateSessionId() {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+}
+
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
+  const [sessionId] = useState(() => generateSessionId())
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const exploreRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (chatOpen) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }, [chatOpen])
 
   const scrollChat = () => {
     setTimeout(() => {
@@ -37,7 +59,10 @@ export default function Home() {
       const res = await fetch('/api/katos-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: updatedMessages.map(m => ({ role: m.role, content: m.content })) })
+        body: JSON.stringify({
+          messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
+          sessionId,
+        })
       })
       const data = await res.json()
       if (data.error) {
