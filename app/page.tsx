@@ -131,12 +131,6 @@ export default function Home() {
             <div className="orb-core" />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', height: '28px' }}>
-            {[0, 0.11, 0.22, 0.33, 0.44, 0.33, 0.22, 0.11, 0].map((delay, i) => (
-              <div key={i} className="wave-bar" style={{ animationDelay: `${delay}s` }} />
-            ))}
-          </div>
-
           <span style={{ fontSize: '12px', letterSpacing: '0.2em', color: '#9ba3c4', textTransform: 'uppercase', fontWeight: 400 }}>Kato</span>
 
           <p style={{ fontSize: '16px', lineHeight: 1.8, textAlign: 'center', maxWidth: '340px', color: '#c8cde0', fontWeight: 300 }}>
