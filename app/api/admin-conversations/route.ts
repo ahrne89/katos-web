@@ -1,17 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { cookies } from 'next/headers'
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_ANON_KEY!
 )
 
-export async function GET() {
-  const cookieStore = await cookies()
-  const auth = cookieStore.get('admin_auth')
+export async function GET(req: NextRequest) {
+  const token = req.nextUrl.searchParams.get('token')
 
-  if (!auth || auth.value !== 'true') {
+  if (token !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

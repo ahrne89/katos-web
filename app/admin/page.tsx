@@ -36,7 +36,7 @@ export default function Admin() {
 
   const loadConversations = async () => {
     setLoading(true)
-    const res = await fetch('/api/admin-conversations')
+    const res = await fetch(`/api/admin-conversations?token=${password}`)
     const data = await res.json()
     setConversations(data)
     setLoading(false)
