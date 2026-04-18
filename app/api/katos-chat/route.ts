@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { katosPrompt } from '../../../lib/katos-knowledge'
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createHash } from 'crypto'
 
 const client = new Anthropic()
 const supabase = createClient(
@@ -10,6 +11,10 @@ const supabase = createClient(
 )
 
 const rateLimitMap = new Map()
+
+function hashIp(ip: string) {
+  return createHash('sha256').update(ip + 'katos-salt').digest('hex').substring(0, 16)
+}
 
 function isRateLimited(ip: string) {
   const now = Date.now()
@@ -23,7 +28,9 @@ function isRateLimited(ip: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || 'unknown'
+  const rawIp = req.headers.get('x-forwarded-for') || 'unknown'
+  const ip = hashIp(rawIp)
+
   if (isRateLimited(ip)) {
     return NextResponse.json({ error: 'Too many messages. Please wait a moment.' }, { status: 429 })
   }
