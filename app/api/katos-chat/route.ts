@@ -1,8 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { katosPrompt } from '../../../lib/katos-knowledge'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 
 const client = new Anthropic()
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!
+)
+
 const rateLimitMap = new Map()
 
 function isRateLimited(ip: string) {
@@ -35,8 +41,16 @@ export async function POST(req: NextRequest) {
       system: katosPrompt,
       messages,
     })
+
     const block = response.content[0]
     const reply = block.type === 'text' ? block.text : ''
+
+    await supabase.from('conversations').insert({
+      source: 'katos',
+      messages: [...messages, { role: 'assistant', content: reply }],
+      ip,
+    })
+
     return NextResponse.json({ reply })
   } catch (error) {
     console.error(error)
