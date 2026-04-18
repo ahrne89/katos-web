@@ -45,15 +45,19 @@ export async function POST(req: NextRequest) {
     const block = response.content[0]
     const reply = block.type === 'text' ? block.text : ''
 
-    await supabase.from('conversations').insert({
+    const { error: dbError } = await supabase.from('conversations').insert({
       source: 'katos',
       messages: [...messages, { role: 'assistant', content: reply }],
       ip,
     })
 
+    if (dbError) {
+      console.error('Supabase error:', JSON.stringify(dbError))
+    }
+
     return NextResponse.json({ reply })
   } catch (error) {
-    console.error(error)
+    console.error('API error:', error)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }
