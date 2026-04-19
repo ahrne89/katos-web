@@ -182,7 +182,7 @@ export default function Home() {
             <img
               src="/orb.png"
               alt="Kato AI orb"
-              style={{ width: '160px', height: '160px', objectFit: 'contain', position: 'relative', zIndex: 5, animation: 'orbPulse 3.5s ease-in-out infinite' }}
+              style={{ width: '160px', height: '160px', objectFit: 'contain', position: 'relative', zIndex: 5, animation: 'orbPulse 3.5s ease-in-out infinite', mixBlendMode: 'screen' as const }}
             />
 
             {/* Labels */}
