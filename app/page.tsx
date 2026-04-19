@@ -71,8 +71,8 @@ export default function Home() {
       } else {
         const raw: string = data.reply
         const showCTA = raw.includes('[BOOK_CTA]')
-        const content = raw.replace('[BOOK_CTA]', '').trim()
-        setMessages([...updatedMessages, { role: 'assistant', content, showCTA }])
+        const replyContent = raw.replace('[BOOK_CTA]', '').trim()
+        setMessages([...updatedMessages, { role: 'assistant', content: replyContent, showCTA }])
       }
       scrollChat()
     } catch {
@@ -97,6 +97,18 @@ export default function Home() {
 
   return (
     <>
+      <style>{`
+        @keyframes bounce {
+          0%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-6px); }
+        }
+        @keyframes spin1 { from{transform:rotateX(72deg) rotateZ(0deg);}to{transform:rotateX(72deg) rotateZ(360deg);} }
+        @keyframes spin2 { from{transform:rotateX(18deg) rotateZ(0deg);}to{transform:rotateX(18deg) rotateZ(-360deg);} }
+        @keyframes spin3 { from{transform:rotateX(48deg) rotateY(25deg) rotateZ(0deg);}to{transform:rotateX(48deg) rotateY(25deg) rotateZ(360deg);} }
+        @keyframes orbPulse { 0%,100%{filter:brightness(1);}50%{filter:brightness(1.15);} }
+        @keyframes glowPulse { 0%,100%{opacity:0.5;transform:scale(1);}50%{opacity:0.9;transform:scale(1.12);} }
+      `}</style>
+
       <main style={{
         minHeight: '100vh',
         background: '#080d1f',
@@ -107,6 +119,22 @@ export default function Home() {
         position: 'relative',
         overflow: 'hidden',
       }}>
+        {/* Stars */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          {Array.from({ length: 80 }).map((_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              width: Math.random() > 0.85 ? '2px' : '1px',
+              height: Math.random() > 0.85 ? '2px' : '1px',
+              borderRadius: '50%',
+              background: '#fff',
+              opacity: Math.random() * 0.5 + 0.1,
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+            }} />
+          ))}
+        </div>
+
         <nav className="nav-padding" style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 36px', zIndex: 10 }}>
           <span style={{ fontSize: '14px', fontWeight: 500, letterSpacing: '0.12em', color: '#f0f0f0' }}>KATOS</span>
           <div style={{ display: 'flex', gap: '32px' }}>
@@ -116,52 +144,57 @@ export default function Home() {
           </div>
         </nav>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', width: '100%', maxWidth: '560px', padding: '0 20px', position: 'relative', zIndex: 1, marginTop: '60px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', maxWidth: '560px', padding: '80px 20px 0', position: 'relative', zIndex: 1 }}>
 
-          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(123,156,255,0.55)', textTransform: 'uppercase', margin: '0 0 16px', fontFamily: 'Inter, sans-serif' }}>Kato</p>
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(123,156,255,0.55)', textTransform: 'uppercase', margin: '0 0 14px' }}>Kato</p>
 
           <h1 className="hero-text" style={{ fontSize: '32px', fontWeight: 300, color: '#f0f0f0', margin: '0 0 10px', letterSpacing: '-0.3px', lineHeight: 1.25, textAlign: 'center' }}>
             We build AI systems that<br />automate your business
           </h1>
 
-          <p style={{ fontSize: '14px', color: '#9ba3c4', fontWeight: 300, margin: '0 0 0px', textAlign: 'center' }}>
+          <p style={{ fontSize: '14px', color: '#9ba3c4', fontWeight: 300, margin: '0 0 0', textAlign: 'center' }}>
             Talk to Kato to explore your use case
           </p>
 
-          {/* Orb image */}
-          <div style={{ position: 'relative', width: '300px', height: '300px', margin: '-20px 0 -20px' }}>
+          {/* Orb with CSS rings */}
+          <div style={{ position: 'relative', width: '300px', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '-10px 0 -10px' }}>
+
+            {/* Outer glow */}
+            <div style={{ position: 'absolute', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(70,110,255,0.12) 0%, transparent 70%)', animation: 'glowPulse 3.5s ease-in-out infinite', pointerEvents: 'none' }} />
+
+            {/* Ring 1 */}
+            <div style={{ position: 'absolute', width: '220px', height: '220px', borderRadius: '50%', border: '1px solid rgba(123,156,255,0.2)', transformStyle: 'preserve-3d', animation: 'spin1 9s linear infinite' }}>
+              <div style={{ position: 'absolute', width: '8px', height: '8px', borderRadius: '50%', background: '#a0b4ff', boxShadow: '0 0 10px rgba(160,180,255,0.9)', top: '50%', left: '50%', marginTop: '-4px', marginLeft: '106px' }} />
+              <div style={{ position: 'absolute', width: '6px', height: '6px', borderRadius: '50%', background: '#7b9cff', boxShadow: '0 0 8px rgba(123,156,255,0.9)', top: '50%', left: '50%', marginTop: '-3px', marginLeft: '-112px' }} />
+            </div>
+
+            {/* Ring 2 */}
+            <div style={{ position: 'absolute', width: '260px', height: '260px', borderRadius: '50%', border: '1px solid rgba(123,156,255,0.12)', transformStyle: 'preserve-3d', animation: 'spin2 14s linear infinite' }}>
+              <div style={{ position: 'absolute', width: '7px', height: '7px', borderRadius: '50%', background: '#c8d8ff', boxShadow: '0 0 10px rgba(200,216,255,0.9)', top: '50%', left: '50%', marginTop: '-3.5px', marginLeft: '126px' }} />
+            </div>
+
+            {/* Ring 3 */}
+            <div style={{ position: 'absolute', width: '185px', height: '185px', borderRadius: '50%', border: '1px solid rgba(123,156,255,0.16)', transformStyle: 'preserve-3d', animation: 'spin3 6.5s linear infinite' }}>
+              <div style={{ position: 'absolute', width: '6px', height: '6px', borderRadius: '50%', background: '#5b8fff', boxShadow: '0 0 8px rgba(91,143,255,0.9)', top: '50%', left: '50%', marginTop: '-3px', marginLeft: '-96px' }} />
+            </div>
+
+            {/* Orb image */}
             <img
-              src="/orb.jpg"
-              alt="Kato AI"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                borderRadius: '50%',
-                mixBlendMode: 'lighten',
-              }}
+              src="/orb.png"
+              alt="Kato AI orb"
+              style={{ width: '160px', height: '160px', objectFit: 'contain', position: 'relative', zIndex: 5, animation: 'orbPulse 3.5s ease-in-out infinite' }}
             />
-            <span style={{ position: 'absolute', top: '52px', left: '10px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Automate</span>
-            <span style={{ position: 'absolute', top: '52px', right: '10px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Analyze</span>
-            <span style={{ position: 'absolute', bottom: '60px', right: '5px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Integrate</span>
-            <span style={{ position: 'absolute', bottom: '60px', left: '10px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Scale</span>
+
+            {/* Labels */}
+            <span style={{ position: 'absolute', top: '28px', left: '20px', fontSize: '12px', color: 'rgba(160,185,255,0.65)', letterSpacing: '0.04em' }}>Automate</span>
+            <span style={{ position: 'absolute', top: '28px', right: '20px', fontSize: '12px', color: 'rgba(160,185,255,0.65)', letterSpacing: '0.04em' }}>Analyze</span>
+            <span style={{ position: 'absolute', bottom: '32px', right: '15px', fontSize: '12px', color: 'rgba(160,185,255,0.65)', letterSpacing: '0.04em' }}>Integrate</span>
+            <span style={{ position: 'absolute', bottom: '32px', left: '20px', fontSize: '12px', color: 'rgba(160,185,255,0.65)', letterSpacing: '0.04em' }}>Scale</span>
           </div>
 
           {/* Chat messages */}
           {chatOpen && (
-            <div
-              ref={chatContainerRef}
-              style={{
-                width: '100%',
-                height: '36vh',
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                padding: '4px 0 8px',
-                marginBottom: '8px',
-              }}
-            >
+            <div ref={chatContainerRef} style={{ width: '100%', height: '36vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', padding: '4px 0 8px', marginBottom: '8px' }}>
               {messages.map((m, i) => (
                 <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '8px' }}>
                   <div style={{
@@ -207,18 +240,17 @@ export default function Home() {
 
           {/* Suggestion chips */}
           {!chatOpen && (
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '28px' }}>
               {suggestions.map(s => (
-                <button key={s} onClick={() => send(s)} style={{ padding: '5px 14px', border: '1px solid rgba(123,156,255,0.18)', borderRadius: '20px', background: 'transparent', color: '#9ba3c4', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.2s, color 0.2s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(123,156,255,0.5)'; e.currentTarget.style.color = '#c8cde0' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(123,156,255,0.18)'; e.currentTarget.style.color = '#9ba3c4' }}
-                >{s}</button>
+                <button key={s} onClick={() => send(s)} style={{ padding: '5px 14px', border: '1px solid rgba(123,156,255,0.18)', borderRadius: '20px', background: 'transparent', color: '#9ba3c4', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {s}
+                </button>
               ))}
             </div>
           )}
 
           {!chatOpen && (
-            <span onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: '11px', color: '#7b85a8', letterSpacing: '0.08em', cursor: 'pointer' }}>
+            <span onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: '11px', color: '#7b85a8', letterSpacing: '0.08em', cursor: 'pointer', marginBottom: '40px' }}>
               or explore ↓
             </span>
           )}
@@ -256,13 +288,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      <style>{`
-        @keyframes bounce {
-          0%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-6px); }
-        }
-      `}</style>
     </>
   )
 }
