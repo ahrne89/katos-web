@@ -46,9 +46,10 @@ export default function Home() {
     }, 50)
   }
 
-  const send = async () => {
-    if (!input.trim() || loading) return
-    const userMessage: Message = { role: 'user', content: input }
+  const send = async (text?: string) => {
+    const content = text || input
+    if (!content.trim() || loading) return
+    const userMessage: Message = { role: 'user', content }
     const updatedMessages = [...messages, userMessage]
     setMessages(updatedMessages)
     setInput('')
@@ -81,6 +82,12 @@ export default function Home() {
     setLoading(false)
   }
 
+  const suggestions = [
+    'Automate customer support',
+    'Build me a website',
+    'Connect my tools',
+  ]
+
   const services = [
     { number: '01', title: 'Websites', desc: 'Fast, clean, built to convert. Integrated with the tools your business actually uses.', href: '/services' },
     { number: '02', title: 'AI agents', desc: 'Like Kato — but for your business. Handles enquiries 24/7 so you don\'t have to.', href: '/services' },
@@ -92,7 +99,7 @@ export default function Home() {
     <>
       <main style={{
         minHeight: '100vh',
-        background: 'radial-gradient(ellipse at 50% 40%, #111b3a 0%, #080d1f 65%)',
+        background: '#080d1f',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -100,22 +107,7 @@ export default function Home() {
         position: 'relative',
         overflow: 'hidden',
       }}>
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          {Array.from({ length: 60 }).map((_, i) => (
-            <div key={i} style={{
-              position: 'absolute',
-              width: Math.random() > 0.8 ? '2px' : '1px',
-              height: Math.random() > 0.8 ? '2px' : '1px',
-              borderRadius: '50%',
-              background: '#fff',
-              opacity: Math.random() * 0.5 + 0.1,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }} />
-          ))}
-        </div>
-
-        <nav className="nav-padding" style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 36px' }}>
+        <nav className="nav-padding" style={{ position: 'absolute', top: 0, left: 0, right: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '22px 36px', zIndex: 10 }}>
           <span style={{ fontSize: '14px', fontWeight: 500, letterSpacing: '0.12em', color: '#f0f0f0' }}>KATOS</span>
           <div style={{ display: 'flex', gap: '32px' }}>
             {['Services', 'Projects', 'About'].map(l => (
@@ -124,30 +116,50 @@ export default function Home() {
           </div>
         </nav>
 
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px', marginTop: '32px', width: '100%', maxWidth: '460px', padding: '0 20px', position: 'relative', zIndex: 1 }}>
-          <div style={{ position: 'relative', width: '140px', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div className="orb-glow" />
-            <div className="orb-mid" />
-            <div className="orb-core" />
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0px', width: '100%', maxWidth: '560px', padding: '0 20px', position: 'relative', zIndex: 1, marginTop: '60px' }}>
 
-          <span style={{ fontSize: '12px', letterSpacing: '0.2em', color: '#9ba3c4', textTransform: 'uppercase', fontWeight: 400 }}>Kato</span>
+          <p style={{ fontSize: '11px', letterSpacing: '0.2em', color: 'rgba(123,156,255,0.55)', textTransform: 'uppercase', margin: '0 0 16px', fontFamily: 'Inter, sans-serif' }}>Kato</p>
 
-          <p style={{ fontSize: '16px', lineHeight: 1.8, textAlign: 'center', maxWidth: '340px', color: '#c8cde0', fontWeight: 300 }}>
-            I&apos;m Kato — how can I help you today?
+          <h1 className="hero-text" style={{ fontSize: '32px', fontWeight: 300, color: '#f0f0f0', margin: '0 0 10px', letterSpacing: '-0.3px', lineHeight: 1.25, textAlign: 'center' }}>
+            We build AI systems that<br />automate your business
+          </h1>
+
+          <p style={{ fontSize: '14px', color: '#9ba3c4', fontWeight: 300, margin: '0 0 0px', textAlign: 'center' }}>
+            Talk to Kato to explore your use case
           </p>
 
+          {/* Orb image */}
+          <div style={{ position: 'relative', width: '300px', height: '300px', margin: '-20px 0 -20px' }}>
+            <img
+              src="/orb.jpg"
+              alt="Kato AI"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: '50%',
+                mixBlendMode: 'lighten',
+              }}
+            />
+            <span style={{ position: 'absolute', top: '52px', left: '10px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Automate</span>
+            <span style={{ position: 'absolute', top: '52px', right: '10px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Analyze</span>
+            <span style={{ position: 'absolute', bottom: '60px', right: '5px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Integrate</span>
+            <span style={{ position: 'absolute', bottom: '60px', left: '10px', fontSize: '12px', color: 'rgba(160,185,255,0.7)', fontFamily: 'Inter,sans-serif', letterSpacing: '0.04em' }}>Scale</span>
+          </div>
+
+          {/* Chat messages */}
           {chatOpen && (
             <div
               ref={chatContainerRef}
               style={{
                 width: '100%',
-                height: '40vh',
+                height: '36vh',
                 overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '12px',
-                padding: '4px 0',
+                padding: '4px 0 8px',
+                marginBottom: '8px',
               }}
             >
               {messages.map((m, i) => (
@@ -181,16 +193,29 @@ export default function Home() {
             </div>
           )}
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+          {/* Input */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px', marginBottom: '14px' }}>
             <input
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && send()}
-              placeholder="Say something..."
+              placeholder="Ask me anything about your business..."
               style={{ flex: 1, minWidth: 0, border: 'none', outline: 'none', fontSize: '16px', background: 'transparent', fontFamily: 'inherit', color: '#f0f0f0', fontWeight: 300 }}
             />
-            <button onClick={send} disabled={loading} style={{ background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: '#7b9cff', fontSize: '16px', opacity: loading ? 0.4 : 1, transition: 'opacity 0.2s' }}>→</button>
+            <button onClick={() => send()} disabled={loading} style={{ background: 'none', border: 'none', cursor: loading ? 'not-allowed' : 'pointer', color: '#7b9cff', fontSize: '18px', opacity: loading ? 0.4 : 1, transition: 'opacity 0.2s', flexShrink: 0 }}>→</button>
           </div>
+
+          {/* Suggestion chips */}
+          {!chatOpen && (
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '24px' }}>
+              {suggestions.map(s => (
+                <button key={s} onClick={() => send(s)} style={{ padding: '5px 14px', border: '1px solid rgba(123,156,255,0.18)', borderRadius: '20px', background: 'transparent', color: '#9ba3c4', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit', transition: 'border-color 0.2s, color 0.2s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(123,156,255,0.5)'; e.currentTarget.style.color = '#c8cde0' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(123,156,255,0.18)'; e.currentTarget.style.color = '#9ba3c4' }}
+                >{s}</button>
+              ))}
+            </div>
+          )}
 
           {!chatOpen && (
             <span onClick={() => exploreRef.current?.scrollIntoView({ behavior: 'smooth' })} style={{ fontSize: '11px', color: '#7b85a8', letterSpacing: '0.08em', cursor: 'pointer' }}>
@@ -231,6 +256,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <style>{`
+        @keyframes bounce {
+          0%, 80%, 100% { transform: translateY(0); }
+          40% { transform: translateY(-6px); }
+        }
+      `}</style>
     </>
   )
 }
