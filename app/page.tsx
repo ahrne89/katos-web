@@ -65,7 +65,7 @@ export default function Home() {
     setLoading(false)
   }
 
-  const suggestions = ['Automate customer support', 'Build me a website', 'Connect my tools']
+  const suggestions = ['Automate customer support', 'Build me a website', 'What can Katos do for me?']
 
   const services = [
     { number: '01', title: 'Websites', desc: 'Fast, clean, built to convert. Integrated with the tools your business actually uses.', href: '/services' },
